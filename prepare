@@ -1,0 +1,28 @@
+#!/bin/bash
+
+function work_on(){
+
+    raw_file='RC_'$1
+    result_file=$1
+
+    hdfs dfs -copyFromLocal $raw_file hdfs:///projects/group5/
+    if [ $? -gt 0 ]
+    then
+        echo "hdfs dfs -copyFromLocal $raw_file hdfs:///projects/group5/ failed!!!!" >> prepare.log
+    fi
+
+    spark-submit --master yarn --deploy-mode client filter_apple_spark.py hdfs:///projects/group5/$raw_file hdfs:///projects/group5/$result_file
+    if [ $? -gt 0 ]
+    then
+        echo "spark-submit --master yarn --deploy-mode client filter_apple_spark.py hdfs:///projects/group5/$raw_file hdfs:///projects/group5/$result_file failed!!!!" >> prepare.log
+    fi
+
+    hdfs dfs -rm hdfs:///projects/group5/$raw_file
+    if [ $? -gt 0 ]
+    then
+         echo "hdfs dfs -rm hdfs:///projects/group5/$raw_file failed!!!!" >> prepare.log
+    fi
+}
+
+work_on 2017-10
+work_on 2017-11
