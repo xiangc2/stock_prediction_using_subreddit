@@ -151,7 +151,7 @@ def train_svm_word2vec(sqlContext, df):
     training, test = df.randomSplit([0.8, 0.2])
 
     #print(count = df.count())
-    
+
     #tokenizer = Tokenizer(inputCol="body", outputCol="words")
 
     word2Vec = Word2Vec(vectorSize=100, minCount=10,
@@ -160,7 +160,12 @@ def train_svm_word2vec(sqlContext, df):
     modelW2V = word2Vec.fit(df)
     modelW2V.getVectors().show()
 
-    test.map(lambda )
+    test = test.select("body").rdd.map(lambda x:(1,modelW2V.transform(x)))
+    vec_sum = test.groupBy(1).sum()
+
+    testDF = vec_sum.toDF("label", "body")
+
+    testDF.show()
 
     #svm = LinearSVC(featuresCol="word2vec",labelCol="label")
     #pipline = Pipeline(stages=[tokenizer, word2Vec, svm])
