@@ -3,7 +3,7 @@ from pyspark import SparkContext, SparkConf
 from pyspark.sql import SQLContext
 from pyspark.sql.types import Row, DoubleType 
 from pyspark.sql import functions as f
-
+from pyspark.sql.functions import col, split
 from pyspark.ml import Pipeline
 from pyspark.ml.feature import HashingTF, IDF, Tokenizer
 from pyspark.ml.classification import LinearSVC
@@ -135,30 +135,30 @@ def train_svm_idf(sqlContext, df):
     print("\n\n\n\n")
 
 def train_svm_word2vec(sqlContext, df):
-
+    df = df.select(col("label"), split(col("body"), " \s*").alias("body"))
     training, test = df.randomSplit([0.8, 0.2])
 
-    count = df.count().show(0)
-
-    tokenizer = Tokenizer(inputCol="body", outputCol="words")
+    #print(count = df.count())
+    
+    #tokenizer = Tokenizer(inputCol="body", outputCol="words")
 
     word2Vec = Word2Vec(vectorSize=100, minCount=10,
-                        inputCol=tokenizer.getOutputCol(), outputCol="word2vec")
+                        inputCol="body", outputCol="word2vec")
 
     modelW2V = word2Vec.fit(df)
-    modelW2V.getVectors()
+    modelW2V.getVectors().show()
 
-    svm = LinearSVC(featuresCol="word2vec",labelCol="label")
+    #svm = LinearSVC(featuresCol="word2vec",labelCol="label")
 
-    pipline = Pipeline(stages=[tokenizer, word2Vec, svm])
+    #pipline = Pipeline(stages=[tokenizer, word2Vec, svm])
 
-    model   = pipline.fit(training)
+   # model   = pipline.fit(training)
 
-    test_df = model.transform(test)
-    train_df  = model.transform(training)
+    #test_df = model.transform(test)
+    #train_df  = model.transform(training)
 
-    test_df.show()
-    train_df.show()
+    #test_df.show()
+    #train_df.show()
 
     # >> > sent = ("a b " * 100 + "a c " * 10).split(" ")
     # >> > doc = spark.createDataFrame([(sent,), (sent,)], ["sentence"])
