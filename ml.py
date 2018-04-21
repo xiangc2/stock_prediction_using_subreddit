@@ -160,6 +160,8 @@ def train_svm_word2vec(sqlContext, df):
     modelW2V = word2Vec.fit(df)
     modelW2V.getVectors().show()
 
+    test.map(lambda )
+
     #svm = LinearSVC(featuresCol="word2vec",labelCol="label")
     #pipline = Pipeline(stages=[tokenizer, word2Vec, svm])
 
