@@ -9,8 +9,7 @@ from pyspark.ml.feature import HashingTF, IDF, Tokenizer
 from pyspark.ml.classification import LinearSVC
 from pyspark.ml.evaluation import BinaryClassificationEvaluator
 from pyspark.ml.feature import Word2Vec
-import nltk
-from nltk.corpus import stopwords
+from /nltk_data/corpora import stopwords
 
 import argparse
 import ast
@@ -36,7 +35,7 @@ def combine_text(rows):
     text_array.sort(key=lambda tup: tup[0], reverse=True)
     num = min(NUM_PER_DAY,len(text_array))
     for i in range(num):
-        text += text_array[i][1].map(parseAndRemoveStopWords)
+        text += parseAndRemoveStopWords(text_array[i][1])
     d['created_utc'] = time
     d['body'] = text
     
