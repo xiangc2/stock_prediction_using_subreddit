@@ -9,6 +9,8 @@ from pyspark.ml.feature import HashingTF, IDF, Tokenizer
 from pyspark.ml.classification import LinearSVC
 from pyspark.ml.evaluation import BinaryClassificationEvaluator
 from pyspark.ml.feature import Word2Vec
+import nltk
+from nltk.corpus import stopwords
 
 import argparse
 import ast
@@ -34,11 +36,19 @@ def combine_text(rows):
     text_array.sort(key=lambda tup: tup[0], reverse=True)
     num = min(NUM_PER_DAY,len(text_array))
     for i in range(num):
-        text += text_array[i][1]
+        text += text_array[i][1].map(parseAndRemoveStopWords)
     d['created_utc'] = time
     d['body'] = text
     
     return d
+
+
+def parseAndRemoveStopWords(text):
+    t = text[0].replace(";"," ").replace(":"," ").replace('"',' ').replace('-',' ').replace("?"," ")
+    t = t.replace(',',' ').replace('.',' ').replace('!','').replace("'"," ").replace("/"," ").replace("\\"," ")
+    t = t.lower().split(" ")
+    stop = stopwords.words('english')
+    return [i for i in t if i not in stop]
 
 
 def read_reddit(sc, sqlContext, filenames):
@@ -135,6 +145,10 @@ def train_svm_idf(sqlContext, df):
     print("\n\n\n\n")
 
 def train_svm_word2vec(sqlContext, df):
+    #redditRDD = df.select('body').rdd
+    #reRDD = redditRDD.map(parseAndRemoveStopWords)
+    #twDF = reRDD.map(lambda p: Row(body=p)).toDF()
+
     df = df.select(col("label"), split(col("body"), " \s*").alias("body"))
     training, test = df.randomSplit([0.8, 0.2])
 
