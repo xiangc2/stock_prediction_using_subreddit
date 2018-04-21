@@ -8,6 +8,7 @@ from pyspark.ml import Pipeline
 from pyspark.ml.feature import HashingTF, IDF, Tokenizer
 from pyspark.ml.classification import LinearSVC
 from pyspark.ml.evaluation import BinaryClassificationEvaluator
+from pyspark.ml.feature import Word2Vec
 
 import argparse
 import ast
@@ -28,7 +29,7 @@ def combine_text(rows):
     text_array = []
     text = ""
     for row in rows:
-        text_array.append((int(row['score']),row['body']))
+        text_array.append((int(row['score']), row['body']))
         time = row['created_utc']
     text_array.sort(key=lambda tup: tup[0], reverse=True)
     num = min(NUM_PER_DAY,len(text_array))
@@ -75,22 +76,25 @@ def get_label(df):
     df = df.withColumn("Open",df["Open"].cast(DoubleType()))
     df = df.withColumn("label", df["Close"] > df["Open"])
     df = df.withColumn("label",df["label"].cast(DoubleType()))
-    df = df.select("label","body");
+    df = df.select("label","body")
     return df
 
 def train_svm_idf(sqlContext, df):
-    
+    #should not be random Split, I think
     training, test = df.randomSplit([0.8, 0.2])    
     
     tokenizer = Tokenizer(inputCol="body", outputCol="words")
+
     hashingTF = HashingTF(numFeatures=2000,
                           inputCol=tokenizer.getOutputCol(),
                           outputCol="rawFeatures")
 
     idf = IDF(inputCol=hashingTF.getOutputCol(),outputCol="features")
+
     svm = LinearSVC(featuresCol="features",labelCol="label")
 
     pipline = Pipeline(stages=[tokenizer, hashingTF, idf, svm])
+
     model   = pipline.fit(training)
 
     test_df = model.transform(test)
@@ -99,7 +103,8 @@ def train_svm_idf(sqlContext, df):
     test_df.show()
     train_df.show()
     
-    evaluator=BinaryClassificationEvaluator(rawPredictionCol="prediction",labelCol="label")
+    evaluator=BinaryClassificationEvaluator(labelCol="label")
+    """rawPredictionCol="prediction","""
 
     train_metrix = evaluator.evaluate(train_df)
     test_metrix = evaluator.evaluate(test_df)
@@ -129,9 +134,41 @@ def train_svm_idf(sqlContext, df):
     print("-" * 30)
     print("\n\n\n\n")
 
+def train_svm_word2vec(sqlContext, df):
+
+    training, test = df.randomSplit([0.8, 0.2])
+
+    count = df.count().show(0)
+
+    tokenizer = Tokenizer(inputCol="body", outputCol="words")
+
+    word2Vec = Word2Vec(vectorSize=100, minCount=10,
+                        inputCol=tokenizer.getOutputCol(), outputCol="word2vec")
+
+    modelW2V = word2Vec.fit(df)
+    modelW2V.getVectors()
+
+    svm = LinearSVC(featuresCol="word2vec",labelCol="label")
+
+    pipline = Pipeline(stages=[tokenizer, word2Vec, svm])
+
+    model   = pipline.fit(training)
+
+    test_df = model.transform(test)
+    train_df  = model.transform(training)
+
+    test_df.show()
+    train_df.show()
+
+    # >> > sent = ("a b " * 100 + "a c " * 10).split(" ")
+    # >> > doc = spark.createDataFrame([(sent,), (sent,)], ["sentence"])
+    # >> > word2Vec = Word2Vec(vectorSize=5, seed=42, inputCol="sentence", outputCol="model")
+    # >> > model = word2Vec.fit(doc)
+    # >> > model.getVectors().show()
+
 
 if __name__ == '__main__':
-    # Get input/output files from user
+    #Get input/output files from user
     parser = argparse.ArgumentParser()
     parser.add_argument('reddit')
     parser.add_argument('stock')
@@ -153,4 +190,4 @@ if __name__ == '__main__':
     df = get_label(df)
     
     # train model
-    train_svm_idf(sqlContext, df)
+    train_svm_word2vec(sqlContext, df)
