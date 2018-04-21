@@ -9,7 +9,7 @@ from pyspark.ml.feature import HashingTF, IDF, Tokenizer
 from pyspark.ml.classification import LinearSVC
 from pyspark.ml.evaluation import BinaryClassificationEvaluator
 from pyspark.ml.feature import Word2Vec
-from /nltk_data/corpora import stopwords
+#from /nltk_data/corpora import stopwords
 
 import argparse
 import ast
@@ -35,7 +35,8 @@ def combine_text(rows):
     text_array.sort(key=lambda tup: tup[0], reverse=True)
     num = min(NUM_PER_DAY,len(text_array))
     for i in range(num):
-        text += parseAndRemoveStopWords(text_array[i][1])
+        text += text_array[i][1]
+        #text += parseAndRemoveStopWords(text_array[i][1])
     d['created_utc'] = time
     d['body'] = text
     
@@ -89,7 +90,7 @@ def get_label(df):
     return df
 
 def train_svm_idf(sqlContext, df):
-    #should not be random Split, I think
+
     training, test = df.randomSplit([0.8, 0.2])    
     
     tokenizer = Tokenizer(inputCol="body", outputCol="words")
@@ -99,11 +100,9 @@ def train_svm_idf(sqlContext, df):
                           outputCol="rawFeatures")
 
     idf = IDF(inputCol=hashingTF.getOutputCol(),outputCol="features")
-
     svm = LinearSVC(featuresCol="features",labelCol="label")
 
     pipline = Pipeline(stages=[tokenizer, hashingTF, idf, svm])
-
     model   = pipline.fit(training)
 
     test_df = model.transform(test)
