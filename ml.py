@@ -161,22 +161,15 @@ def train_svm_word2vec(sqlContext, df):
     modelW2V.getVectors().show()
 
     #svm = LinearSVC(featuresCol="word2vec",labelCol="label")
-
     #pipline = Pipeline(stages=[tokenizer, word2Vec, svm])
 
-   # model   = pipline.fit(training)
+    #model   = pipline.fit(training)
 
     #test_df = model.transform(test)
     #train_df  = model.transform(training)
 
     #test_df.show()
     #train_df.show()
-
-    # >> > sent = ("a b " * 100 + "a c " * 10).split(" ")
-    # >> > doc = spark.createDataFrame([(sent,), (sent,)], ["sentence"])
-    # >> > word2Vec = Word2Vec(vectorSize=5, seed=42, inputCol="sentence", outputCol="model")
-    # >> > model = word2Vec.fit(doc)
-    # >> > model.getVectors().show()
 
 
 if __name__ == '__main__':
