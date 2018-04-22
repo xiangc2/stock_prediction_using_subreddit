@@ -5,7 +5,7 @@ from pyspark.sql.types import Row, DoubleType
 from pyspark.sql import functions as f
 from pyspark.sql.functions import col, split
 from pyspark.ml import Pipeline
-from pyspark.ml.feature import HashingTF, IDF, Tokenizer
+from pyspark.ml.feature import HashingTF, IDF, Tokenizer, StopWordsRemover
 from pyspark.ml.classification import LinearSVC
 from pyspark.ml.evaluation import BinaryClassificationEvaluator
 from pyspark.ml.feature import Word2Vec
@@ -36,8 +36,8 @@ def combine_text(rows):
     text_array.sort(key=lambda tup: tup[0], reverse=True)
     num = min(NUM_PER_DAY,len(text_array))
     for i in range(num):
-        text += text_array[i][1]
-        #text += parseAndRemoveStopWords(text_array[i][1])
+        #text += text_array[i][1]
+        text += parseAndRemoveStopWords(text_array[i][1])
     d['created_utc'] = time
     d['body'] = text
     
@@ -47,9 +47,10 @@ def combine_text(rows):
 def parseAndRemoveStopWords(text):
     t = text[0].replace(";"," ").replace(":"," ").replace('"',' ').replace('-',' ').replace("?"," ")
     t = t.replace(',',' ').replace('.',' ').replace('!','').replace("'"," ").replace("/"," ").replace("\\"," ")
-    t = t.lower().split(" ")
-    stop = stopwords.words('english')
-    return [i for i in t if i not in stop]
+    #t = t.lower().split(" ")
+    #stop = stopwords.words('english')
+    #return [i for i in t if i not in stop]
+    return t
 
 
 def read_reddit(sc, sqlContext, filenames):
@@ -144,12 +145,25 @@ def train_svm_idf(sqlContext, df):
     print("\n\n\n\n")
 
 def train_svm_word2vec(sqlContext, df):
-
     df = df.select(col("label"), split(col("body"), " \s*").alias("body"))
+    b = ["a", "about", "above", "after", "again", "against", "all", "am", "an", "and", "any", "are", "as", "at",
+            "be", "because", "been", "before", "being", "below", "between", "both", "but", "by", "could", "did", "do",
+            "does", "doing", "down", "during", "each", "few", "for", "from", "further", "had", "has", "have", "having",
+            "he", "he'd", "he'll", "he's", "her", "here", "here's", "hers", "herself", "him", "himself", "his", "how",
+            "how's", "i", "i'd", "i'll", "i'm", "i've", "if", "in", "into", "is", "it", "it's", "its", "itself",
+            "let's", "me", "more", "most", "my", "myself", "nor", "of", "on", "once", "only", "or", "other", "ought",
+            "our", "ours", "ourselves", "out", "over", "own", "same", "she", "she'd", "she'll", "she's", "should", "so",
+            "some", "such", "than", "that", "that's", "the", "their", "theirs", "them", "themselves", "then", "there",
+            "there's", "these", "they", "they'd", "they'll", "they're", "they've", "this", "those", "through", "to",
+            "too", "under", "until", "up", "very", "was", "we", "we'd", "we'll", "we're", "we've", "were", "what",
+            "what's", "when", "when's", "where", "where's", "which", "while", "who", "who's", "whom", "why", "why's",
+            "with", "would", "you", "you'd", "you'll", "you're", "you've", "your", "yours", "yourself", "yourselves"]
+    remover = StopWordsRemover(inputCol="body", outputCol="words", stopWords=b)
+    df = remover.transform(df)
     training, test = df.randomSplit([0.8, 0.2])
 
     word2Vec = Word2Vec(vectorSize=100, minCount=10,
-                        inputCol="body", outputCol="word2vec")
+                        inputCol="words", outputCol="word2vec")
 
     modelW2V = word2Vec.fit(df)
 
