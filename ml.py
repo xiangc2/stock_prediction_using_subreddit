@@ -169,12 +169,11 @@ def train_svm_word2vec(sqlContext, df):
     test_df = model.transform(testDF)
 
 
-    labelCol = result.select("label")
-    predictCol = result.select("prediction")
+    #labelCol = result.select("label")
+    #predictCol = result.select("prediction")
 
-    result.select("label").show()
-    testDF.select("label").show()
-    result.select("prediction").show()
+    test_df.select("label").show()
+    test_df.select("prediction").show()
 
     evaluator=BinaryClassificationEvaluator(labelCol="label")
     """rawPredictionCol="prediction","""
