@@ -10,7 +10,8 @@ from pyspark.ml.classification import LinearSVC
 from pyspark.ml.evaluation import BinaryClassificationEvaluator
 from pyspark.ml.feature import Word2Vec
 #from /nltk_data/corpora import stopwords
-
+from pyspark.sql import Row
+from pyspark.ml.linalg import Vectors
 import argparse
 import ast
 
@@ -158,14 +159,41 @@ def train_svm_word2vec(sqlContext, df):
                         inputCol="body", outputCol="word2vec")
 
     modelW2V = word2Vec.fit(df)
+    b = modelW2V.getVectors().select("vector").rdd.map(lambda x:x["vector"]).take(1)
+    #print("b")
+    #print(b)
     modelW2V.getVectors().show()
 
-    test = test.select("body").rdd.map(lambda x:(1,modelW2V.transform(x)))
-    vec_sum = test.groupBy(1).sum()
+    
+    a = modelW2V.transform(training).select("word2vec").rdd.map(lambda x:x["word2vec"]).take(1)
+    #print("a")
+    #print(a)
+    trainDF = modelW2V.transform(training)
+    trainDF = trainDF.select(col("label").alias("label"), col("word2vec").alias("features"))
+    testDF = modelW2V.transform(test)
+    testDF = testDF.select(col("label").alias("label"), col("word2vec").alias("features"))
+    svm = LinearSVC(maxIter=5, regParam=0.01)
+    model = svm.fit(trainDF)
+    result = model.transform(testDF)
+    c = result.collect()        
+    print("\n~~~~~~~~~~~~~\n")
+    print(c)
+    print("\n~~~~~~~~~~~~~\n")
+    labelCol = result.select("label")
+    predictCol = result.select("prediction")
 
-    testDF = vec_sum.toDF("label", "body")
 
-    testDF.show()
+    labelCol.show()
+    testDF.select("label").show()
+    predictCol.show()
+    
+    #test = test.select("body").rdd.map(lambda x:(1,modelW2V.transform(x)))
+    #print(test)
+    #vec_sum = test.groupBy(1).sum()
+
+
+    #testDF = vec_sum.toDF("label", "body")
+    #testDF.show()
 
     #svm = LinearSVC(featuresCol="word2vec",labelCol="label")
     #pipline = Pipeline(stages=[tokenizer, word2Vec, svm])
