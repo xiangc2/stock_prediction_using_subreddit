@@ -37,7 +37,7 @@ def combine_text(rows):
     num = min(NUM_PER_DAY,len(text_array))
     for i in range(num):
         #text += text_array[i][1]
-        text += parseAndRemoveStopWords(text_array[i][1])
+        text += " " + parseAndRemoveStopWords(text_array[i][1])
     d['created_utc'] = time
     d['body'] = text
     
@@ -45,9 +45,11 @@ def combine_text(rows):
 
 
 def parseAndRemoveStopWords(text):
-    t = text[0].replace(";"," ").replace(":"," ").replace('"',' ').replace('-',' ').replace("?"," ")
-    t = t.replace(',',' ').replace('.',' ').replace('!','').replace("'"," ").replace("/"," ").replace("\\"," ")
+    t = text.replace(";"," ").replace(":"," ").replace('"',' ').replace('-',' ').replace("?"," ")
+    t = t.replace(',',' ').replace('.',' ').replace('!','').replace("/"," ").replace("\\"," ")
+    t = t.replace('@',' ').replace('&',' ').replace('#',' ').replace('*',' ').replace('%',' ')
     #t = t.lower().split(" ")
+    t = t.lower()
     #stop = stopwords.words('english')
     #return [i for i in t if i not in stop]
     return t
@@ -145,7 +147,12 @@ def train_svm_idf(sqlContext, df):
     print("\n\n\n\n")
 
 def train_svm_word2vec(sqlContext, df):
+    print("\n\n\n\n origional body")
+    df.select("body").show()
     df = df.select(col("label"), split(col("body"), " \s*").alias("body"))
+    
+    print("\n\n\n\n split body")
+    df.select("body").show()
     b = ["a", "about", "above", "after", "again", "against", "all", "am", "an", "and", "any", "are", "as", "at",
             "be", "because", "been", "before", "being", "below", "between", "both", "but", "by", "could", "did", "do",
             "does", "doing", "down", "during", "each", "few", "for", "from", "further", "had", "has", "have", "having",
@@ -157,16 +164,19 @@ def train_svm_word2vec(sqlContext, df):
             "there's", "these", "they", "they'd", "they'll", "they're", "they've", "this", "those", "through", "to",
             "too", "under", "until", "up", "very", "was", "we", "we'd", "we'll", "we're", "we've", "were", "what",
             "what's", "when", "when's", "where", "where's", "which", "while", "who", "who's", "whom", "why", "why's",
-            "with", "would", "you", "you'd", "you'll", "you're", "you've", "your", "yours", "yourself", "yourselves"]
+            "with", "would", "you", "you'd", "you'll"," ", "you're", "you've", "your", "yours", "yourself", "yourselves"]
     remover = StopWordsRemover(inputCol="body", outputCol="words", stopWords=b)
     df = remover.transform(df)
+    
+    print("\n\n\n\n After stopWords")
+    df.select("words").show()
     training, test = df.randomSplit([0.8, 0.2])
 
     word2Vec = Word2Vec(vectorSize=100, minCount=10,
                         inputCol="words", outputCol="word2vec")
 
     modelW2V = word2Vec.fit(df)
-
+    print("\n\n\n\n word2vwc GetVector")
     modelW2V.getVectors().show()
 
     # _temp_a = modelW2V.transform(training).select("word2vec").rdd.map(lambda x:x["word2vec"]).take(1)
@@ -186,8 +196,8 @@ def train_svm_word2vec(sqlContext, df):
     #labelCol = result.select("label")
     #predictCol = result.select("prediction")
 
-    test_df.select("label").show()
-    test_df.select("prediction").show()
+    #test_df.select("label").show()
+    #test_df.select("prediction").show()
 
     evaluator=BinaryClassificationEvaluator(labelCol="label")
     """rawPredictionCol="prediction","""
