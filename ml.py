@@ -144,67 +144,68 @@ def train_svm_idf(sqlContext, df):
     print("\n\n\n\n")
 
 def train_svm_word2vec(sqlContext, df):
-    #redditRDD = df.select('body').rdd
-    #reRDD = redditRDD.map(parseAndRemoveStopWords)
-    #twDF = reRDD.map(lambda p: Row(body=p)).toDF()
 
     df = df.select(col("label"), split(col("body"), " \s*").alias("body"))
     training, test = df.randomSplit([0.8, 0.2])
-
-    #print(count = df.count())
-
-    #tokenizer = Tokenizer(inputCol="body", outputCol="words")
 
     word2Vec = Word2Vec(vectorSize=100, minCount=10,
                         inputCol="body", outputCol="word2vec")
 
     modelW2V = word2Vec.fit(df)
-    b = modelW2V.getVectors().select("vector").rdd.map(lambda x:x["vector"]).take(1)
-    #print("b")
-    #print(b)
+
     modelW2V.getVectors().show()
 
-    
-    a = modelW2V.transform(training).select("word2vec").rdd.map(lambda x:x["word2vec"]).take(1)
-    #print("a")
-    #print(a)
+    # _temp_a = modelW2V.transform(training).select("word2vec").rdd.map(lambda x:x["word2vec"]).take(1)
+    # _temp_b = modelW2V.getVectors().select("vector").rdd.map(lambda x:x["vector"]).take(1)
+
     trainDF = modelW2V.transform(training)
     trainDF = trainDF.select(col("label").alias("label"), col("word2vec").alias("features"))
     testDF = modelW2V.transform(test)
     testDF = testDF.select(col("label").alias("label"), col("word2vec").alias("features"))
     svm = LinearSVC(maxIter=5, regParam=0.01)
     model = svm.fit(trainDF)
-    result = model.transform(testDF)
-    c = result.collect()        
-    print("\n~~~~~~~~~~~~~\n")
-    print(c)
-    print("\n~~~~~~~~~~~~~\n")
+
+    train_df = model.transform(trainDF)
+    test_df = model.transform(testDF)
+
+
     labelCol = result.select("label")
     predictCol = result.select("prediction")
 
-
-    labelCol.show()
+    result.select("label").show()
     testDF.select("label").show()
-    predictCol.show()
-    
-    #test = test.select("body").rdd.map(lambda x:(1,modelW2V.transform(x)))
-    #print(test)
-    #vec_sum = test.groupBy(1).sum()
+    result.select("prediction").show()
 
+    evaluator=BinaryClassificationEvaluator(labelCol="label")
+    """rawPredictionCol="prediction","""
 
-    #testDF = vec_sum.toDF("label", "body")
-    #testDF.show()
+    train_metrix = evaluator.evaluate(train_df)
+    test_metrix = evaluator.evaluate(test_df)
+    test_p = test_df.select("prediction").rdd.map(lambda x:x['prediction']).collect()
+    test_l = test_df.select("label").rdd.map(lambda x:x['label']).collect()
+    train_p = train_df.select("prediction").rdd.map(lambda x:x['prediction']).collect()
+    train_l = train_df.select("label").rdd.map(lambda x:x['label']).collect()
 
-    #svm = LinearSVC(featuresCol="word2vec",labelCol="label")
-    #pipline = Pipeline(stages=[tokenizer, word2Vec, svm])
+    print("\n\n\n\n")
+    print("-" * 15 + " OUTPUT " + "-" * 15)
+    print()
+    print("confusion matrix for trainning data")
+    print(train_metrix)
+    print("train label")
+    print(train_l)
+    print("train prediction")
+    print(train_p)
+    print("-" * 30)
+    print()
+    print("confusion matrix for testing data")
+    print(test_metrix)
+    print("test label")
+    print(test_l)
+    print("test prediction")
+    print(test_p)
 
-    #model   = pipline.fit(training)
-
-    #test_df = model.transform(test)
-    #train_df  = model.transform(training)
-
-    #test_df.show()
-    #train_df.show()
+    print("-" * 30)
+    print("\n\n\n\n")
 
 
 if __name__ == '__main__':
