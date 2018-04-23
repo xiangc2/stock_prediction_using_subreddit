@@ -7,6 +7,7 @@ from pyspark.sql.functions import col, split
 from pyspark.ml import Pipeline
 from pyspark.ml.feature import HashingTF, IDF, Tokenizer, StopWordsRemover
 from pyspark.ml.classification import LinearSVC
+from pyspark.ml.classification import LogisticRegression
 from pyspark.ml.evaluation import BinaryClassificationEvaluator
 from pyspark.ml.feature import Word2Vec
 #from /nltk_data/corpora import stopwords
@@ -186,17 +187,17 @@ def train_svm_word2vec(sqlContext, df):
     trainDF = trainDF.select(col("label").alias("label"), col("word2vec").alias("features"))
     testDF = modelW2V.transform(test)
     testDF = testDF.select(col("label").alias("label"), col("word2vec").alias("features"))
-    svm = LinearSVC(maxIter=5, regParam=0.01)
+    logistic = LogisticRegression(regParam=0.01, labelCol="label",  featuresCol="features")
 
-    featuresCol = trainDF.select("features")
-    Sparse_features = featuresCol.rdd.map(lambda vector: SparseVector(vector.toArray()))
-    print("\n\n\n\nSparse_features")
-    print(Sparse_features.collect())
-    print("\n\n\n\nfinish")
+    #featuresCol = trainDF.select("features")
+    #Sparse_features = featuresCol.rdd.map(lambda vector: SparseVector(vector.toArray()))
+    #print("\n\n\n\nSparse_features")
+    #print(Sparse_features.collect())
+    #print("\n\n\n\nfinish")
     #asSparse = udf((v: Vector) => v.toSparse)
     #testDF.withColumn("features", asDense($"dense_features")).show()   
  
-    model = svm.fit(trainDF)
+    model = logistic.fit(trainDF)
 
     train_df = model.transform(trainDF)
     test_df = model.transform(testDF)
