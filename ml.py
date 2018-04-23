@@ -11,7 +11,7 @@ from pyspark.ml.evaluation import BinaryClassificationEvaluator
 from pyspark.ml.feature import Word2Vec
 #from /nltk_data/corpora import stopwords
 from pyspark.sql import Row
-from pyspark.ml.linalg import Vectors
+from pyspark.ml.linalg import Vectors, SparseVector, DenseVector
 import argparse
 import ast
 
@@ -187,12 +187,22 @@ def train_svm_word2vec(sqlContext, df):
     testDF = modelW2V.transform(test)
     testDF = testDF.select(col("label").alias("label"), col("word2vec").alias("features"))
     svm = LinearSVC(maxIter=5, regParam=0.01)
+
+    featuresCol = trainDF.select("features")
+    Sparse_features = featuresCol.rdd.map(lambda vector: SparseVector(vector.toArray()))
+    print("\n\n\n\nSparse_features")
+    print(Sparse_features.collect())
+    print("\n\n\n\nfinish")
+    #asSparse = udf((v: Vector) => v.toSparse)
+    #testDF.withColumn("features", asDense($"dense_features")).show()   
+ 
     model = svm.fit(trainDF)
 
     train_df = model.transform(trainDF)
     test_df = model.transform(testDF)
-
-
+    
+    
+    print(train_df.collect())
     #labelCol = result.select("label")
     #predictCol = result.select("prediction")
 
