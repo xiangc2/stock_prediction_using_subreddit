@@ -16,10 +16,12 @@
       <file leaf-file-name="ml.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/ml.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="336">
-              <caret line="216" column="0" lean-forward="true" selection-start-line="216" selection-start-column="0" selection-end-line="216" selection-end-column="0" />
+            <state relative-caret-position="265">
+              <caret line="245" column="36" lean-forward="false" selection-start-line="245" selection-start-column="36" selection-end-line="245" selection-end-column="36" />
               <folding>
                 <element signature="e#0#43#0" expanded="true" />
+                <element signature="e#2926#4467#0" expanded="false" />
+                <element signature="e#6347#7968#0" expanded="false" />
               </folding>
             </state>
           </provider>
@@ -42,6 +44,7 @@
       <find>sqlContext</find>
       <find>createDataFrame</find>
       <find>body</find>
+      <find>drop</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -159,12 +162,6 @@
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
-      <breakpoints>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/ml.py</url>
-          <option name="timeStamp" value="6" />
-        </line-breakpoint>
-      </breakpoints>
       <option name="time" value="7" />
     </breakpoint-manager>
     <watches-manager />
@@ -213,10 +210,12 @@
     <entry file="file://$PROJECT_DIR$/mcmc.py" />
     <entry file="file://$PROJECT_DIR$/ml.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="336">
-          <caret line="216" column="0" lean-forward="true" selection-start-line="216" selection-start-column="0" selection-end-line="216" selection-end-column="0" />
+        <state relative-caret-position="265">
+          <caret line="245" column="36" lean-forward="false" selection-start-line="245" selection-start-column="36" selection-end-line="245" selection-end-column="36" />
           <folding>
             <element signature="e#0#43#0" expanded="true" />
+            <element signature="e#2926#4467#0" expanded="false" />
+            <element signature="e#6347#7968#0" expanded="false" />
           </folding>
         </state>
       </provider>

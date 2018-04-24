@@ -42,7 +42,7 @@ def combine_text(rows):
         text += " " + parseAndRemoveStopWords(text_array[i][1])
     d['created_utc'] = time
     d['body'] = text
-    
+
     return d
 
 
@@ -52,78 +52,94 @@ def parseAndRemoveStopWords(text):
     t = t.replace('@',' ').replace('&',' ').replace('#',' ').replace('*',' ').replace('%',' ')
     #t = t.lower().split(" ")
     t = t.lower()
-    #stop = stopwords.words('english')
-    #return [i for i in t if i not in stop]
     return t
 
 
 def read_reddit(sc, sqlContext, filenames):
-  
+
     input = sc.textFile(filenames)
     json_file = input.map(ast.literal_eval)
     data = json_file.map(lambda x: Row(**create_dict(x)))
-    data = data.map(lambda x: (x['created_utc'],x))    
+    data = data.map(lambda x: (x['created_utc'],x))
 
     #data = data.filter(lambda x: int(x[1]['score'] > 0))
     data = data.filter(lambda x: int(x[1]['body'] != "[deleted]"))
     data = data.filter(lambda x: int(x[1]['body'] != "[removed]"))
     data = data.filter(lambda x: int(x[1]['controversiality']) <= 0)
-   
-    data = data.groupByKey().mapValues(lambda x: Row(**combine_text(x))) 
+
+    data = data.groupByKey().mapValues(lambda x: Row(**combine_text(x)))
     df   = data.map(lambda x: x[1]).toDF()
     return df
 
 
 def read_stock(sqlContext, filename):
-    
-    df = sqlContext.read.csv(filename, header=True)    
+
+    df = sqlContext.read.csv(filename, header=True)
     return df
 
 
 def combine(sqlContext, reddit_df, stock_df):
-    
+
     df = reddit_df.join(stock_df, reddit_df.created_utc == stock_df.Date)
     df.drop('Symbol').drop('created_utc')
     return df
 
 def get_label(df):
-    
+
     df = df.withColumn("Close",df["Close"].cast(DoubleType()))
     df = df.withColumn("Open",df["Open"].cast(DoubleType()))
     df = df.withColumn("label", df["Close"] > df["Open"])
     df = df.withColumn("label",df["label"].cast(DoubleType()))
-    df = df.select("label","body")
+    df = df.select("label","body", "Date")
     return df
 
 
 def non_random_split(df):
+
+    #clean the stopword
+    df = clean_stopword(df) # input: label body Date #output: label words Date
+
+    #count total row number and where to split
     rowNum = df.count()
     splitIndex = int(rowNum * 0.8)
 
-    dfRDD = df.rdd.zipWithIndex()
-    newDF = dfRDD.map(lambda x: (x[0], x[0], x[0][1], x[1])).toDF(["label", "words", "index"])
+    #zip with index, output: label, words, index
+    df.orderBy("date").zipWithIndex()
+    dfRDD = df.rdd
 
-    IndexLabel = newDF.select("index", "label")
-    IndexWords = newDF.select("index", "words")
+    #split col
+    newDF = dfRDD.map(lambda x: (x[0][0], x[0][1], x[0][2], x[1])).toDF(["label", "words", "date", "index"])
+    IndexLabel = newDF.select("index", "label")  # "index", "label"
+    IndexWords = newDF.select("index", "words")  # "index", "words"
 
-    IndexLabel.rdd.map(lambda x: (x[0] + 1, x[1])).toDF(["index", "label"])
-    IndexWords.rdd.map(lambda x: (x[0] - 1, x[1])).toDF(["index", "words"])
+    #set delay
+    IndexLabel = IndexLabel.rdd.map(lambda x: (x[0] + 1, x[1])).toDF(["index", "label"])
+    IndexWords = IndexWords.rdd.map(lambda x: (x[0] - 1, x[1])).toDF(["index", "words"])
 
-    print("\n\n\n\nSplit:")
-    dfWithIndex = dfRDD.toDF(['data', 'index'])
-    train = dfWithIndex.rdd.filter(lambda x: x[1] < splitIndex)
-    training = train.map(lambda x: (x[0][0], x[0][1])).toDF(["label", "words"])
-    test = dfWithIndex.rdd.filter(lambda x: x[1] > splitIndex)
-    test = test.map(lambda x: (x[0][0], x[0][1])).toDF(["label", "words"])
+    #indexlabel drop last 2, indexwords drop first 2
+    IndexLabel = IndexLabel.rdd.filter(lambda x: x[0]< rowNum-2).toDF(["index", "label"])
+    IndexWords = IndexWords.rdd.filter(lambda x: x[0]> 2).toDF(["index", "words"])
+
+    #output: index label words
+    IndexWords = IndexWords.select(col("words"), col("index").alias("index2"))
+    df = IndexLabel.join(IndexWords, IndexLabel.index == IndexWords.index2)
+    df = df.select(col("index"),col("label"),col("words"))
+
+    training = df.rdd.filter(lambda x: x[0] < splitIndex).toDF(["index", "label", "words"])
+    test = df.rdd.filter(lambda x: x[0] > splitIndex).toDF(["index", "label", "words"])
+
     print("\n\n\n\nTraining")
     training.show()
     print("\n\n\n\nTest")
     test.show()
 
+    return training, test
+
+
 def clean_stopword(df):
     print("\n\n\n\n origional body")
     df.select("body").show()
-    df = df.select(col("label"), split(col("body"), " \s*").alias("body"))
+    df = df.select(col("label"), split(col("body"), " \s*").alias("body"), col("Date"))
 
     print("\n\n\n\n split body")
     df.select("body").show()
@@ -145,12 +161,12 @@ def clean_stopword(df):
     print("\n\n\n\n After stopWords")
     df.select("words").show()
 
-
+    return df #label words Date
 
 def train_svm_idf(sqlContext, df):
 
-    training, test = df.randomSplit([0.8, 0.2])    
-    
+    training, test = df.randomSplit([0.8, 0.2])
+
     tokenizer = Tokenizer(inputCol="body", outputCol="words")
 
     hashingTF = HashingTF(numFeatures=2000,
@@ -168,15 +184,15 @@ def train_svm_idf(sqlContext, df):
 
     test_df.show()
     train_df.show()
-    
+
     evaluator=BinaryClassificationEvaluator(labelCol="label")
     """rawPredictionCol="prediction","""
 
     train_metrix = evaluator.evaluate(train_df)
     test_metrix = evaluator.evaluate(test_df)
-    test_p = test_df.select("prediction").rdd.map(lambda x:x['prediction']).collect()  
+    test_p = test_df.select("prediction").rdd.map(lambda x:x['prediction']).collect()
     test_l = test_df.select("label").rdd.map(lambda x:x['label']).collect()
-    train_p = train_df.select("prediction").rdd.map(lambda x:x['prediction']).collect()   
+    train_p = train_df.select("prediction").rdd.map(lambda x:x['prediction']).collect()
     train_l = train_df.select("label").rdd.map(lambda x:x['label']).collect()
 
     print("\n\n\n\n")
@@ -201,7 +217,10 @@ def train_svm_idf(sqlContext, df):
     print("\n\n\n\n")
 
 def train_svm_word2vec(sqlContext, df):
-    training, test = df.randomSplit([0.8, 0.2])
+
+    #input: "label", "body", "Date"
+    training, test = non_random_split(df)
+    #training, test = df.randomSplit([0.8, 0.2])
 
     word2Vec = Word2Vec(vectorSize=100, minCount=10,
                         inputCol="words", outputCol="word2vec")
@@ -223,9 +242,9 @@ def train_svm_word2vec(sqlContext, df):
 
     train_df = model.transform(trainDF)
     test_df = model.transform(testDF)
-    
-    
-    print(train_df.collect())
+
+    print("model.transform(trainDF):")
+    train_df.show()
     #labelCol = result.select("label")
     #predictCol = result.select("prediction")
 
@@ -279,12 +298,12 @@ if __name__ == '__main__':
     # read data into dataframe
     reddit_df = read_reddit(sc, sqlContext, args.reddit)
     stock_df = read_stock(sqlContext, args.stock)
-    
+
     # combine
     df = combine(sqlContext, reddit_df, stock_df)
-    
+
     # create label
     df = get_label(df)
-    
+
     # train model
     train_svm_word2vec(sqlContext, df)
