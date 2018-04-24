@@ -110,32 +110,32 @@ def non_random_split(df):
     #dfRDD = df.rdd
 
     #split col
-    newDF = dfRDD.map(lambda x: (x[0][0], x[0][1], x[0][2], x[1])).toDF(["label", "words", "date", "index"])
-    IndexLabel = newDF.select("index", "label")  # "index", "label"
+    newDF = dfRDD.map(lambda x: (x[0][0], x[0][1], x[0][2], x[1])).toDF(["label", "words", "Date", "index"])
+    IndexLabel = newDF.select("index", "label", "Date")  # "index", "label"
     IndexWords = newDF.select("index", "words")  # "index", "words"
 
     #set delay
-    IndexLabel = IndexLabel.rdd.map(lambda x: (x[0] + 1, x[1])).toDF(["index", "label"])
+    IndexLabel = IndexLabel.rdd.map(lambda x: (x[0] + 1, x[1])).toDF(["index", "label", "Date"])
     IndexWords = IndexWords.rdd.map(lambda x: (x[0] - 1, x[1])).toDF(["index", "words"])
 
     #indexlabel drop last 2, indexwords drop first 2
-    IndexLabel = IndexLabel.rdd.filter(lambda x: x[0]< rowNum-2).toDF(["index", "label"])
+    IndexLabel = IndexLabel.rdd.filter(lambda x: x[0]< rowNum-2).toDF(["index", "label", "Date"])
     IndexWords = IndexWords.rdd.filter(lambda x: x[0]> 2).toDF(["index", "words"])
 
     #output: index label words
     IndexWords = IndexWords.select(col("words"), col("index").alias("index2"))
     df = IndexLabel.join(IndexWords, IndexLabel.index == IndexWords.index2)
-    df = df.select(col("index"),col("label"),col("words"))
+    df = df.select(col("Date"), col("index"),col("label"),col("words"))
 
-    training = df.rdd.filter(lambda x: x[0] < splitIndex).toDF(["index", "label", "words"])
-    test = df.rdd.filter(lambda x: x[0] > splitIndex).toDF(["index", "label", "words"])
+    training = df.rdd.filter(lambda x: x[0] < splitIndex).toDF(["Date", "index", "label", "words"])
+    test = df.rdd.filter(lambda x: x[0] > splitIndex).toDF(["Date", "index", "label", "words"])
 
     print("\n\n\n\nTraining")
     training.show()
     print("\n\n\n\nTest")
     test.show()
 
-    return training, test
+    return training, test #format: "Date", "index", "label", "words"
 
 
 def clean_stopword(df):
@@ -224,15 +224,15 @@ def train_svm_word2vec(sqlContext, df):
     training, test = non_random_split(df)
     #training, test = df.randomSplit([0.8, 0.2])
  
-    df = training.union(test)
-
+    df = clean_stopword(df) #label words Date
     print("df input:")
     df.show()
+
     word2Vec = Word2Vec(vectorSize=100, minCount=10,
                         inputCol="words", outputCol="word2vec")
 
     modelW2V = word2Vec.fit(df)
-    print("\n\n\n\n word2vwc GetVector")
+    print("\n\n\n\n word2vec GetVector")
     modelW2V.getVectors().show()
 
     # _temp_a = modelW2V.transform(training).select("word2vec").rdd.map(lambda x:x["word2vec"]).take(1)
