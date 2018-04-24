@@ -171,7 +171,32 @@ def train_svm_word2vec(sqlContext, df):
     
     print("\n\n\n\n After stopWords")
     df.select("words").show()
-    training, test = df.randomSplit([0.8, 0.2])
+    #training, test = df.randomSplit([0.8, 0.2])
+
+    rowNum = df.count()
+    splitIndex = int(rowNum * 0.8)
+    
+    
+    dfRDD = df.rdd.zipWithIndex()
+    newDF = dfRDD.map(lambda x:(x[0],x[0], x[0][1], x[1])).toDF(["label","words","index"])
+    
+    IndexLabel = newDF.select("index","label")
+    IndexWords = newDF.select("index","words")
+
+    IndexLabel.rdd.map(lambda x:(x[0]+1, x[1])).toDF(["index","label"])
+    IndexWords.rdd.map(lambda x:(x[0]-1, x[1])).toDF(["index","words"])
+
+
+    print("\n\n\n\nSplit:")
+    dfWithIndex = dfRDD.toDF(['data','index'])
+    train = dfWithIndex.rdd.filter(lambda x:x[1] < splitIndex)
+    training = train.map(lambda x: (x[0][0],x[0][1])).toDF(["label","words"])
+    test = dfWithIndex.rdd.filter(lambda x:x[1]>splitIndex)
+    test = test.map(lambda x:(x[0][0], x[0][1])).toDF(["label", "words"])
+    print("\n\n\n\nTraining")
+    training.show()
+    print("\n\n\n\nTest")
+    test.show()
 
     word2Vec = Word2Vec(vectorSize=100, minCount=10,
                         inputCol="words", outputCol="word2vec")
