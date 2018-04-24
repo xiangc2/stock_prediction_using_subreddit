@@ -1,18 +1,19 @@
 from pyspark import SparkContext, SparkConf
 
+from pyspark.sql import Row
 from pyspark.sql import SQLContext
-from pyspark.sql.types import Row, DoubleType 
 from pyspark.sql import functions as f
 from pyspark.sql.functions import col, split
+from pyspark.sql.types import Row, DoubleType
+
 from pyspark.ml import Pipeline
-from pyspark.ml.feature import HashingTF, IDF, Tokenizer, StopWordsRemover
-from pyspark.ml.classification import LinearSVC
-from pyspark.ml.classification import LogisticRegression
+
 from pyspark.ml.evaluation import BinaryClassificationEvaluator
-from pyspark.ml.feature import Word2Vec
-#from /nltk_data/corpora import stopwords
-from pyspark.sql import Row
+from pyspark.ml.classification import LinearSVC, LogisticRegression
+from pyspark.ml.feature import HashingTF, IDF, Tokenizer, StopWordsRemover, Word2Vec
+
 from pyspark.ml.linalg import Vectors, SparseVector, DenseVector
+
 import argparse
 import ast
 
@@ -94,6 +95,58 @@ def get_label(df):
     df = df.select("label","body")
     return df
 
+
+def non_random_split(df):
+    rowNum = df.count()
+    splitIndex = int(rowNum * 0.8)
+
+    dfRDD = df.rdd.zipWithIndex()
+    newDF = dfRDD.map(lambda x: (x[0], x[0], x[0][1], x[1])).toDF(["label", "words", "index"])
+
+    IndexLabel = newDF.select("index", "label")
+    IndexWords = newDF.select("index", "words")
+
+    IndexLabel.rdd.map(lambda x: (x[0] + 1, x[1])).toDF(["index", "label"])
+    IndexWords.rdd.map(lambda x: (x[0] - 1, x[1])).toDF(["index", "words"])
+
+    print("\n\n\n\nSplit:")
+    dfWithIndex = dfRDD.toDF(['data', 'index'])
+    train = dfWithIndex.rdd.filter(lambda x: x[1] < splitIndex)
+    training = train.map(lambda x: (x[0][0], x[0][1])).toDF(["label", "words"])
+    test = dfWithIndex.rdd.filter(lambda x: x[1] > splitIndex)
+    test = test.map(lambda x: (x[0][0], x[0][1])).toDF(["label", "words"])
+    print("\n\n\n\nTraining")
+    training.show()
+    print("\n\n\n\nTest")
+    test.show()
+
+def clean_stopword(df):
+    print("\n\n\n\n origional body")
+    df.select("body").show()
+    df = df.select(col("label"), split(col("body"), " \s*").alias("body"))
+
+    print("\n\n\n\n split body")
+    df.select("body").show()
+    b = ["a", "about", "above", "after", "again", "against", "all", "am", "an", "and", "any", "are", "as", "at",
+         "be", "because", "been", "before", "being", "below", "between", "both", "but", "by", "could", "did", "do",
+         "does", "doing", "down", "during", "each", "few", "for", "from", "further", "had", "has", "have", "having",
+         "he", "he'd", "he'll", "he's", "her", "here", "here's", "hers", "herself", "him", "himself", "his", "how",
+         "how's", "i", "i'd", "i'll", "i'm", "i've", "if", "in", "into", "is", "it", "it's", "its", "itself",
+         "let's", "me", "more", "most", "my", "myself", "nor", "of", "on", "once", "only", "or", "other", "ought",
+         "our", "ours", "ourselves", "out", "over", "own", "same", "she", "she'd", "she'll", "she's", "should", "so",
+         "some", "such", "than", "that", "that's", "the", "their", "theirs", "them", "themselves", "then", "there",
+         "there's", "these", "they", "they'd", "they'll", "they're", "they've", "this", "those", "through", "to",
+         "too", "under", "until", "up", "very", "was", "we", "we'd", "we'll", "we're", "we've", "were", "what",
+         "what's", "when", "when's", "where", "where's", "which", "while", "who", "who's", "whom", "why", "why's",
+         "with", "would", "you", "you'd", "you'll", " ", "you're", "you've", "your", "yours", "yourself", "yourselves"]
+    remover = StopWordsRemover(inputCol="body", outputCol="words", stopWords=b)
+    df = remover.transform(df)
+
+    print("\n\n\n\n After stopWords")
+    df.select("words").show()
+
+
+
 def train_svm_idf(sqlContext, df):
 
     training, test = df.randomSplit([0.8, 0.2])    
@@ -148,55 +201,7 @@ def train_svm_idf(sqlContext, df):
     print("\n\n\n\n")
 
 def train_svm_word2vec(sqlContext, df):
-    print("\n\n\n\n origional body")
-    df.select("body").show()
-    df = df.select(col("label"), split(col("body"), " \s*").alias("body"))
-    
-    print("\n\n\n\n split body")
-    df.select("body").show()
-    b = ["a", "about", "above", "after", "again", "against", "all", "am", "an", "and", "any", "are", "as", "at",
-            "be", "because", "been", "before", "being", "below", "between", "both", "but", "by", "could", "did", "do",
-            "does", "doing", "down", "during", "each", "few", "for", "from", "further", "had", "has", "have", "having",
-            "he", "he'd", "he'll", "he's", "her", "here", "here's", "hers", "herself", "him", "himself", "his", "how",
-            "how's", "i", "i'd", "i'll", "i'm", "i've", "if", "in", "into", "is", "it", "it's", "its", "itself",
-            "let's", "me", "more", "most", "my", "myself", "nor", "of", "on", "once", "only", "or", "other", "ought",
-            "our", "ours", "ourselves", "out", "over", "own", "same", "she", "she'd", "she'll", "she's", "should", "so",
-            "some", "such", "than", "that", "that's", "the", "their", "theirs", "them", "themselves", "then", "there",
-            "there's", "these", "they", "they'd", "they'll", "they're", "they've", "this", "those", "through", "to",
-            "too", "under", "until", "up", "very", "was", "we", "we'd", "we'll", "we're", "we've", "were", "what",
-            "what's", "when", "when's", "where", "where's", "which", "while", "who", "who's", "whom", "why", "why's",
-            "with", "would", "you", "you'd", "you'll"," ", "you're", "you've", "your", "yours", "yourself", "yourselves"]
-    remover = StopWordsRemover(inputCol="body", outputCol="words", stopWords=b)
-    df = remover.transform(df)
-    
-    print("\n\n\n\n After stopWords")
-    df.select("words").show()
-    #training, test = df.randomSplit([0.8, 0.2])
-
-    rowNum = df.count()
-    splitIndex = int(rowNum * 0.8)
-    
-    
-    dfRDD = df.rdd.zipWithIndex()
-    newDF = dfRDD.map(lambda x:(x[0],x[0], x[0][1], x[1])).toDF(["label","words","index"])
-    
-    IndexLabel = newDF.select("index","label")
-    IndexWords = newDF.select("index","words")
-
-    IndexLabel.rdd.map(lambda x:(x[0]+1, x[1])).toDF(["index","label"])
-    IndexWords.rdd.map(lambda x:(x[0]-1, x[1])).toDF(["index","words"])
-
-
-    print("\n\n\n\nSplit:")
-    dfWithIndex = dfRDD.toDF(['data','index'])
-    train = dfWithIndex.rdd.filter(lambda x:x[1] < splitIndex)
-    training = train.map(lambda x: (x[0][0],x[0][1])).toDF(["label","words"])
-    test = dfWithIndex.rdd.filter(lambda x:x[1]>splitIndex)
-    test = test.map(lambda x:(x[0][0], x[0][1])).toDF(["label", "words"])
-    print("\n\n\n\nTraining")
-    training.show()
-    print("\n\n\n\nTest")
-    test.show()
+    training, test = df.randomSplit([0.8, 0.2])
 
     word2Vec = Word2Vec(vectorSize=100, minCount=10,
                         inputCol="words", outputCol="word2vec")
@@ -214,14 +219,6 @@ def train_svm_word2vec(sqlContext, df):
     testDF = testDF.select(col("label").alias("label"), col("word2vec").alias("features"))
     logistic = LogisticRegression(regParam=0.01, labelCol="label",  featuresCol="features")
 
-    #featuresCol = trainDF.select("features")
-    #Sparse_features = featuresCol.rdd.map(lambda vector: SparseVector(vector.toArray()))
-    #print("\n\n\n\nSparse_features")
-    #print(Sparse_features.collect())
-    #print("\n\n\n\nfinish")
-    #asSparse = udf((v: Vector) => v.toSparse)
-    #testDF.withColumn("features", asDense($"dense_features")).show()   
- 
     model = logistic.fit(trainDF)
 
     train_df = model.transform(trainDF)
