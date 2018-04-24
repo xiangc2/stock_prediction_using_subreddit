@@ -106,7 +106,7 @@ def non_random_split(df):
     splitIndex = int(rowNum * 0.8)
 
     #zip with index, output: label, words, Date, index
-    dfRDD = df.rddsortBy(lambda x: x[2]).zipWithIndex()
+    dfRDD = df.rdd.sortBy(lambda x: x[2]).zipWithIndex()
     #dfRDD = df.rdd
 
     #split col
@@ -219,11 +219,15 @@ def train_svm_idf(sqlContext, df):
     print("\n\n\n\n")
 
 def train_svm_word2vec(sqlContext, df):
-
+   
     #input: "label", "body", "Date"
     training, test = non_random_split(df)
     #training, test = df.randomSplit([0.8, 0.2])
+ 
+    df = training.union(test)
 
+    print("df input:")
+    df.show()
     word2Vec = Word2Vec(vectorSize=100, minCount=10,
                         inputCol="words", outputCol="word2vec")
 
