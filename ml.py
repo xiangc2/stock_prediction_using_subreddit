@@ -97,15 +97,17 @@ def get_label(df):
 def non_random_split(df):
 
     #clean the stopword
-    df = clean_stopword(df) # input: label body Date #output: label words Date
+    df = clean_stopword(df)
+    # input: label body Date
+    # output: label words Date
 
     #count total row number and where to split
     rowNum = df.count()
     splitIndex = int(rowNum * 0.8)
 
-    #zip with index, output: label, words, index
-    df.orderBy("date").zipWithIndex()
-    dfRDD = df.rdd
+    #zip with index, output: label, words, Date, index
+    dfRDD = df.rddsortBy(lambda x: x[2]).zipWithIndex()
+    #dfRDD = df.rdd
 
     #split col
     newDF = dfRDD.map(lambda x: (x[0][0], x[0][1], x[0][2], x[1])).toDF(["label", "words", "date", "index"])
