@@ -246,9 +246,9 @@ def train_svm_word2vec(sqlContext, df):
     # _temp_b = modelW2V.getVectors().select("vector").rdd.map(lambda x:x["vector"]).take(1)
 
     trainDF = modelW2V.transform(training)
-    trainDF = trainDF.select(col("label").alias("label"), col("word2vec").alias("features"), col("diff"))
+    trainDF = trainDF.select(col("label").alias("label"), col("word2vec").alias("features"), col("Date"), col("diff"))
     testDF = modelW2V.transform(test)
-    testDF = testDF.select(col("label").alias("label"), col("word2vec").alias("features"), col("diff"))
+    testDF = testDF.select(col("label").alias("label"), col("word2vec").alias("features"), col("Date"), col("diff"))
 
 
     logistic = LogisticRegression(regParam=0.01, labelCol="label",  featuresCol="features")
@@ -271,10 +271,10 @@ def train_svm_word2vec(sqlContext, df):
 
     train_metrix = evaluator.evaluate(train_df)
     test_metrix = evaluator.evaluate(test_df)
-    test_p = test_df.select("prediction").rdd.map(lambda x:x['prediction']).collect()
-    test_l = test_df.select("label").rdd.map(lambda x:x['label']).collect()
-    train_p = train_df.select("prediction").rdd.map(lambda x:x['prediction']).collect()
-    train_l = train_df.select("label").rdd.map(lambda x:x['label']).collect()
+    test_p = test_df.select("prediction", "Date").rdd.map(lambda x:(x['prediction'], x['Date'])).collect()
+    test_l = test_df.select("label", "Date").rdd.map(lambda x: (x['label'],x['Date'])).collect()
+    train_p = train_df.select("prediction", "Date").rdd.map(lambda x:(x['prediction'], x['Date'])).collect()
+    train_l = train_df.select("label", "Date").rdd.map(lambda x:(x['label'],x['Date'])).collect()
 
     print("\n\n\n\n")
     print("-" * 15 + " OUTPUT " + "-" * 15)
