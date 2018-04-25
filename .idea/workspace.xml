@@ -2,7 +2,6 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="91221692-9882-48cb-bf46-620a8626cd7e" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ml.py" afterPath="$PROJECT_DIR$/ml.py" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -17,16 +16,19 @@
       <file leaf-file-name="ml.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/ml.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="265">
-              <caret line="48" column="0" lean-forward="true" selection-start-line="48" selection-start-column="0" selection-end-line="48" selection-end-column="0" />
+            <state relative-caret-position="489">
+              <caret line="284" column="18" lean-forward="true" selection-start-line="284" selection-start-column="18" selection-end-line="284" selection-end-column="18" />
               <folding>
                 <element signature="e#0#43#0" expanded="true" />
-                <element signature="e#627#780#0" expanded="false" />
-                <element signature="e#811#1269#0" expanded="false" />
                 <element signature="e#1311#1655#0" expanded="false" />
                 <element signature="e#1707#2284#0" expanded="false" />
-                <element signature="e#6673#8294#0" expanded="false" />
-                <marker date="1524619763081" expanded="false" signature="5039:6410" ph="..." />
+                <element signature="e#2330#2391#0" expanded="false" />
+                <element signature="e#2445#2570#0" expanded="false" />
+                <element signature="e#2597#2974#0" expanded="false" />
+                <element signature="e#3008#4764#0" expanded="false" />
+                <element signature="e#4795#6623#0" expanded="false" />
+                <element signature="e#6666#8287#0" expanded="false" />
+                <marker date="1524627450832" expanded="false" signature="5032:6403" ph="..." />
               </folding>
             </state>
           </provider>
@@ -148,7 +150,7 @@
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.60777956" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.19789983" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.19547658" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
@@ -171,7 +173,7 @@
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
-      <option name="time" value="11" />
+      <option name="time" value="13" />
     </breakpoint-manager>
     <watches-manager />
   </component>
@@ -219,16 +221,19 @@
     <entry file="file://$PROJECT_DIR$/mcmc.py" />
     <entry file="file://$PROJECT_DIR$/ml.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="265">
-          <caret line="48" column="0" lean-forward="true" selection-start-line="48" selection-start-column="0" selection-end-line="48" selection-end-column="0" />
+        <state relative-caret-position="489">
+          <caret line="284" column="18" lean-forward="true" selection-start-line="284" selection-start-column="18" selection-end-line="284" selection-end-column="18" />
           <folding>
             <element signature="e#0#43#0" expanded="true" />
-            <element signature="e#627#780#0" expanded="false" />
-            <element signature="e#811#1269#0" expanded="false" />
             <element signature="e#1311#1655#0" expanded="false" />
             <element signature="e#1707#2284#0" expanded="false" />
-            <element signature="e#6673#8294#0" expanded="false" />
-            <marker date="1524619763081" expanded="false" signature="5039:6410" ph="..." />
+            <element signature="e#2330#2391#0" expanded="false" />
+            <element signature="e#2445#2570#0" expanded="false" />
+            <element signature="e#2597#2974#0" expanded="false" />
+            <element signature="e#3008#4764#0" expanded="false" />
+            <element signature="e#4795#6623#0" expanded="false" />
+            <element signature="e#6666#8287#0" expanded="false" />
+            <marker date="1524627450832" expanded="false" signature="5032:6403" ph="..." />
           </folding>
         </state>
       </provider>

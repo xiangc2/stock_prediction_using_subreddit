@@ -120,12 +120,12 @@ def non_random_split(df):
     IndexWords = newDF.select("index", "words")  # "index", "words"
 
     #set delay
-    IndexLabel = IndexLabel.rdd.map(lambda x: (x[0] + 3, x[1], x[2], [3])).toDF(["index", "label", "Date", "diff"])
-    IndexWords = IndexWords.rdd.map(lambda x: (x[0] - 3, x[1])).toDF(["index", "words"])
+    IndexLabel = IndexLabel.rdd.map(lambda x: (x[0], x[1], x[2], [3])).toDF(["index", "label", "Date", "diff"])
+    IndexWords = IndexWords.rdd.map(lambda x: (x[0], x[1])).toDF(["index", "words"])
 
     #indexlabel drop last 2, indexwords drop first 2
     IndexLabel = IndexLabel.rdd.filter(lambda x: x[0]< rowNum).toDF(["index", "label", "Date", "diff"])
-    IndexWords = IndexWords.rdd.filter(lambda x: x[0]> 0).toDF(["index", "words"])
+    IndexWords = IndexWords.rdd.filter(lambda x: x[0]>= 0).toDF(["index", "words"])
 
     #output: index label words
     IndexWords = IndexWords.select(col("words"), col("index").alias("index2"))
@@ -271,10 +271,10 @@ def train_svm_word2vec(sqlContext, df):
 
     train_metrix = evaluator.evaluate(train_df)
     test_metrix = evaluator.evaluate(test_df)
-    test_p = test_df.select("prediction", "Date").rdd.map(lambda x:(x['prediction'], x['Date'])).collect()
-    test_l = test_df.select("label", "Date").rdd.map(lambda x: (x['label'],x['Date'])).collect()
-    train_p = train_df.select("prediction", "Date").rdd.map(lambda x:(x['prediction'], x['Date'])).collect()
-    train_l = train_df.select("label", "Date").rdd.map(lambda x:(x['label'],x['Date'])).collect()
+    test_p = test_df.select(col("prediction"), col("Date")).rdd.map(lambda x:(x['prediction'], x['Date'])).collect()
+    test_l = test_df.select(col("label"), col("Date")).rdd.map(lambda x: (x['label'],x['Date'])).collect()
+    train_p = train_df.select(col("prediction"), col("Date")).rdd.map(lambda x:(x['prediction'], x['Date'])).collect()
+    train_l = train_df.select(col("label"), col("Date")).rdd.map(lambda x:(x['label'],x['Date'])).collect()
 
     print("\n\n\n\n")
     print("-" * 15 + " OUTPUT " + "-" * 15)
