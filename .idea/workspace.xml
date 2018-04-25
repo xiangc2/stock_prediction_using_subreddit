@@ -17,22 +17,16 @@
       <file leaf-file-name="ml.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/ml.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-3">
-              <caret line="28" column="0" lean-forward="true" selection-start-line="28" selection-start-column="0" selection-end-line="28" selection-end-column="0" />
+            <state relative-caret-position="265">
+              <caret line="48" column="0" lean-forward="true" selection-start-line="48" selection-start-column="0" selection-end-line="48" selection-end-column="0" />
               <folding>
                 <element signature="e#0#43#0" expanded="true" />
                 <element signature="e#627#780#0" expanded="false" />
                 <element signature="e#811#1269#0" expanded="false" />
                 <element signature="e#1311#1655#0" expanded="false" />
                 <element signature="e#1707#2284#0" expanded="false" />
-                <element signature="e#2330#2391#0" expanded="false" />
-                <element signature="e#2445#2570#0" expanded="false" />
-                <element signature="e#2928#4604#0" expanded="false" />
-                <element signature="e#4635#6442#0" expanded="false" />
-                <element signature="e#4856#6229#0" expanded="false" />
-                <element signature="e#6485#8106#0" expanded="false" />
-                <element signature="e#8157#10488#0" expanded="false" />
-                <element signature="e#10522#11145#0" expanded="false" />
+                <element signature="e#6673#8294#0" expanded="false" />
+                <marker date="1524619763081" expanded="false" signature="5039:6410" ph="..." />
               </folding>
             </state>
           </provider>
@@ -58,6 +52,8 @@
       <find>drop</find>
       <find>date</find>
       <find>Date</find>
+      <find>show</find>
+      <find>diff</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -175,7 +171,7 @@
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
-      <option name="time" value="9" />
+      <option name="time" value="11" />
     </breakpoint-manager>
     <watches-manager />
   </component>
@@ -223,22 +219,16 @@
     <entry file="file://$PROJECT_DIR$/mcmc.py" />
     <entry file="file://$PROJECT_DIR$/ml.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-3">
-          <caret line="28" column="0" lean-forward="true" selection-start-line="28" selection-start-column="0" selection-end-line="28" selection-end-column="0" />
+        <state relative-caret-position="265">
+          <caret line="48" column="0" lean-forward="true" selection-start-line="48" selection-start-column="0" selection-end-line="48" selection-end-column="0" />
           <folding>
             <element signature="e#0#43#0" expanded="true" />
             <element signature="e#627#780#0" expanded="false" />
             <element signature="e#811#1269#0" expanded="false" />
             <element signature="e#1311#1655#0" expanded="false" />
             <element signature="e#1707#2284#0" expanded="false" />
-            <element signature="e#2330#2391#0" expanded="false" />
-            <element signature="e#2445#2570#0" expanded="false" />
-            <element signature="e#2928#4604#0" expanded="false" />
-            <element signature="e#4635#6442#0" expanded="false" />
-            <element signature="e#4856#6229#0" expanded="false" />
-            <element signature="e#6485#8106#0" expanded="false" />
-            <element signature="e#8157#10488#0" expanded="false" />
-            <element signature="e#10522#11145#0" expanded="false" />
+            <element signature="e#6673#8294#0" expanded="false" />
+            <marker date="1524619763081" expanded="false" signature="5039:6410" ph="..." />
           </folding>
         </state>
       </provider>

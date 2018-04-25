@@ -103,8 +103,8 @@ def non_random_split(df):
 
     #clean the stopword
     df = clean_stopword(df)
-    # input: label body Date
-    # output: label words Date
+    # input: label body Date diff
+    # output: label words Date diff
 
     #count total row number and where to split
     rowNum = df.count()
@@ -115,25 +115,25 @@ def non_random_split(df):
     #dfRDD = df.rdd
 
     #split col
-    newDF = dfRDD.map(lambda x: (x[0][0], x[0][1], x[0][2], x[1])).toDF(["label", "words", "Date", "index"])
-    IndexLabel = newDF.select("index", "label", "Date")  # "index", "label"
+    newDF = dfRDD.map(lambda x: (x[0][0], x[0][1], x[0][2], x[0][3], x[1])).toDF(["label", "words", "Date", "diff", "index"])
+    IndexLabel = newDF.select("index", "label", "Date", "diff")  # "index", "label"
     IndexWords = newDF.select("index", "words")  # "index", "words"
 
     #set delay
-    IndexLabel = IndexLabel.rdd.map(lambda x: (x[0] + 3, x[1], x[2])).toDF(["index", "label", "Date"])
+    IndexLabel = IndexLabel.rdd.map(lambda x: (x[0] + 3, x[1], x[2], [3])).toDF(["index", "label", "Date", "diff"])
     IndexWords = IndexWords.rdd.map(lambda x: (x[0] - 3, x[1])).toDF(["index", "words"])
 
     #indexlabel drop last 2, indexwords drop first 2
-    IndexLabel = IndexLabel.rdd.filter(lambda x: x[0]< rowNum).toDF(["index", "label", "Date"])
+    IndexLabel = IndexLabel.rdd.filter(lambda x: x[0]< rowNum).toDF(["index", "label", "Date", "diff"])
     IndexWords = IndexWords.rdd.filter(lambda x: x[0]> 0).toDF(["index", "words"])
 
     #output: index label words
     IndexWords = IndexWords.select(col("words"), col("index").alias("index2"))
     df = IndexLabel.join(IndexWords, IndexLabel.index == IndexWords.index2)
-    df = df.select(col("index"),col("label"),col("words"), col("Date"))
+    df = df.select(col("index"),col("label"),col("words"), col("Date"), col("diff"))
 
-    training = df.rdd.filter(lambda x: x[0] < splitIndex).toDF(["index", "label", "words", "Date"])
-    test = df.rdd.filter(lambda x: x[0] > splitIndex).toDF(["index", "label", "words", "Date"])
+    training = df.rdd.filter(lambda x: x[0] < splitIndex).toDF(["index", "label", "words", "Date", "diff"])
+    test = df.rdd.filter(lambda x: x[0] > splitIndex).toDF(["index", "label", "words", "Date", "diff"])
 
     print("\n\n\n\nTraining")
     #training.show()
@@ -146,7 +146,7 @@ def non_random_split(df):
 def clean_stopword(df):
     print("\n\n\n\n origional body")
     #df.select("body").show()
-    df = df.select(col("label"), split(col("body"), " \s*").alias("body"), col("Date"))
+    df = df.select(col("label"), split(col("body"), " \s*").alias("body"), col("Date"), col("diff"))
 
     print("\n\n\n\n split body")
     #df.select("body").show()
@@ -168,7 +168,7 @@ def clean_stopword(df):
     print("\n\n\n\n After stopWords")
     #df.select("words").show()
 
-    return df #label words Date
+    return df #label words Date diff
 
 
 def train_svm_idf(sqlContext, df):
@@ -227,11 +227,11 @@ def train_svm_idf(sqlContext, df):
 
 def train_svm_word2vec(sqlContext, df):
    
-    #input: "label", "body", "Date"
+    #input: "label", "body", "Date", "diff"
     training, test = non_random_split(df)
     #training, test = df.randomSplit([0.8, 0.2])
  
-    df = clean_stopword(df) #label words Date
+    df = clean_stopword(df) #label words Date, "diff"
     print("df input:")
     #df.show()
 
@@ -246,9 +246,11 @@ def train_svm_word2vec(sqlContext, df):
     # _temp_b = modelW2V.getVectors().select("vector").rdd.map(lambda x:x["vector"]).take(1)
 
     trainDF = modelW2V.transform(training)
-    trainDF = trainDF.select(col("label").alias("label"), col("word2vec").alias("features"))
+    trainDF = trainDF.select(col("label").alias("label"), col("word2vec").alias("features"), col("diff"))
     testDF = modelW2V.transform(test)
-    testDF = testDF.select(col("label").alias("label"), col("word2vec").alias("features"))
+    testDF = testDF.select(col("label").alias("label"), col("word2vec").alias("features"), col("diff"))
+
+
     logistic = LogisticRegression(regParam=0.01, labelCol="label",  featuresCol="features")
 
     model = logistic.fit(trainDF)
