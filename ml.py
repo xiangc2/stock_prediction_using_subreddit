@@ -27,6 +27,7 @@ def create_dict(x):
             d[i] = str(x[i])
     return d
 
+
 def combine_text(rows):
     d = {}
     time = None
@@ -84,13 +85,17 @@ def combine(sqlContext, reddit_df, stock_df):
     df.drop('Symbol').drop('created_utc')
     return df
 
+
 def get_label(df):
 
     df = df.withColumn("Close",df["Close"].cast(DoubleType()))
     df = df.withColumn("Open",df["Open"].cast(DoubleType()))
     df = df.withColumn("label", df["Close"] > df["Open"])
+    df = df.withColumn("diff", df["Close"] - df["Open"])
     df = df.withColumn("label",df["label"].cast(DoubleType()))
     df = df.select("label","body", "Date")
+
+    df.show()
     return df
 
 
@@ -131,20 +136,20 @@ def non_random_split(df):
     test = df.rdd.filter(lambda x: x[0] > splitIndex).toDF(["index", "label", "words", "Date"])
 
     print("\n\n\n\nTraining")
-    training.show()
+    #training.show()
     print("\n\n\n\nTest")
-    test.show()
+    #test.show()
 
     return training, test #format: "Date", "index", "label", "words"
 
 
 def clean_stopword(df):
     print("\n\n\n\n origional body")
-    df.select("body").show()
+    #df.select("body").show()
     df = df.select(col("label"), split(col("body"), " \s*").alias("body"), col("Date"))
 
     print("\n\n\n\n split body")
-    df.select("body").show()
+    #df.select("body").show()
     b = ["a", "about", "above", "after", "again", "against", "all", "am", "an", "and", "any", "are", "as", "at",
          "be", "because", "been", "before", "being", "below", "between", "both", "but", "by", "could", "did", "do",
          "does", "doing", "down", "during", "each", "few", "for", "from", "further", "had", "has", "have", "having",
@@ -161,9 +166,10 @@ def clean_stopword(df):
     df = remover.transform(df)
 
     print("\n\n\n\n After stopWords")
-    df.select("words").show()
+    #df.select("words").show()
 
     return df #label words Date
+
 
 def train_svm_idf(sqlContext, df):
 
@@ -218,6 +224,7 @@ def train_svm_idf(sqlContext, df):
     print("-" * 30)
     print("\n\n\n\n")
 
+
 def train_svm_word2vec(sqlContext, df):
    
     #input: "label", "body", "Date"
@@ -226,14 +233,14 @@ def train_svm_word2vec(sqlContext, df):
  
     df = clean_stopword(df) #label words Date
     print("df input:")
-    df.show()
+    #df.show()
 
     word2Vec = Word2Vec(vectorSize=100, minCount=10,
                         inputCol="words", outputCol="word2vec")
 
     modelW2V = word2Vec.fit(df)
     print("\n\n\n\n word2vec GetVector")
-    modelW2V.getVectors().show()
+    #modelW2V.getVectors().show()
 
     # _temp_a = modelW2V.transform(training).select("word2vec").rdd.map(lambda x:x["word2vec"]).take(1)
     # _temp_b = modelW2V.getVectors().select("vector").rdd.map(lambda x:x["vector"]).take(1)
@@ -250,7 +257,7 @@ def train_svm_word2vec(sqlContext, df):
     test_df = model.transform(testDF)
 
     print("model.transform(trainDF):")
-    train_df.show()
+    #train_df.show()
     #labelCol = result.select("label")
     #predictCol = result.select("prediction")
 
