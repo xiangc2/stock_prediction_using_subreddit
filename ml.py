@@ -115,20 +115,20 @@ def non_random_split(df):
     IndexWords = newDF.select("index", "words")  # "index", "words"
 
     #set delay
-    IndexLabel = IndexLabel.rdd.map(lambda x: (x[0] + 1, x[1])).toDF(["index", "label", "Date"])
-    IndexWords = IndexWords.rdd.map(lambda x: (x[0] - 1, x[1])).toDF(["index", "words"])
+    IndexLabel = IndexLabel.rdd.map(lambda x: (x[0] + 3, x[1], x[2])).toDF(["index", "label", "Date"])
+    IndexWords = IndexWords.rdd.map(lambda x: (x[0] - 3, x[1])).toDF(["index", "words"])
 
     #indexlabel drop last 2, indexwords drop first 2
-    IndexLabel = IndexLabel.rdd.filter(lambda x: x[0]< rowNum-2).toDF(["index", "label", "Date"])
-    IndexWords = IndexWords.rdd.filter(lambda x: x[0]> 2).toDF(["index", "words"])
+    IndexLabel = IndexLabel.rdd.filter(lambda x: x[0]< rowNum).toDF(["index", "label", "Date"])
+    IndexWords = IndexWords.rdd.filter(lambda x: x[0]> 0).toDF(["index", "words"])
 
     #output: index label words
     IndexWords = IndexWords.select(col("words"), col("index").alias("index2"))
     df = IndexLabel.join(IndexWords, IndexLabel.index == IndexWords.index2)
-    df = df.select(col("Date"), col("index"),col("label"),col("words"))
+    df = df.select(col("index"),col("label"),col("words"), col("Date"))
 
-    training = df.rdd.filter(lambda x: x[0] < splitIndex).toDF(["Date", "index", "label", "words"])
-    test = df.rdd.filter(lambda x: x[0] > splitIndex).toDF(["Date", "index", "label", "words"])
+    training = df.rdd.filter(lambda x: x[0] < splitIndex).toDF(["index", "label", "words", "Date"])
+    test = df.rdd.filter(lambda x: x[0] > splitIndex).toDF(["index", "label", "words", "Date"])
 
     print("\n\n\n\nTraining")
     training.show()
