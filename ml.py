@@ -93,7 +93,7 @@ def get_label(df):
     df = df.withColumn("label", df["Close"] > df["Open"])
     df = df.withColumn("diff", df["Close"] - df["Open"])
     df = df.withColumn("label",df["label"].cast(DoubleType()))
-    df = df.select("label","body", "Date")
+    df = df.select("label","body", "Date", "diff")
 
     df.show()
     return df
