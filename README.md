@@ -88,7 +88,6 @@ Course Cluster
         spark-submit --master yarn --deploy-mode client ml.py [subreddit_file] [stock_data_file]
         Example:spark-submit --master yarn --deploy-mode client ml.py hdfs:///projects/group5/filter_time/part-00043 hdfs:///projects/group5/stock
         ```
-        
 
 **Improvement(auto bash script)**
 
