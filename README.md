@@ -26,17 +26,17 @@ Course Cluster
 
 3. filter_apple_spark.py
 
-   Filter data by subreddit.
+    Filter data by subreddit.
 
 4. filter_time.py
 
-   Convert timestamp to humanized date.
+    Convert timestamp to humanized date.
 
 5. ml.py
 
 6. prepare
 
-   Bash script for automatically uploading, filtering, and writing log.
+    Bash script for automatically uploading, filtering, and writing log.
 
 ## Usage:
 
@@ -44,18 +44,18 @@ Course Cluster
 
 1. Obtain download-links
 
-   ```bash
-   # This will create a download_links.txt.
-   # The two parameters are time span, start month & end-month
-   python download.py 2014-01 2017-11
-   ```
+       ```bash
+       # This will create a download_links.txt.
+       # The two parameters are time span, start month & end-month
+       python download.py 2014-01 2017-11
+       ```
 
 2. Download
 
-   ```bash
-   # On the cluster
-   wget -i -c download.txt
-   ```
+       ```bash
+       # On the cluster
+       wget -i -c download.txt
+       ```
 
 3. Extract
 
