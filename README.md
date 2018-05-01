@@ -59,22 +59,22 @@ Course Cluster
 
 3. Extract
 
-   ```bash
-   # This will cost about 20 minutes for each file.
-   bzip2 -d RC_2014-01.bz2 # -d will delete the original archive
-   ```
+       ```bash
+       # This will cost about 20 minutes for each file.
+       bzip2 -d RC_2014-01.bz2 # -d will delete the original archive
+       ```
 
 4. Upload to hdfs
 
-   ```bash
-   hdfs dfs -copyFromLocal RC_2014-01 hdfs:///projects/group5/
-   ```
+       ```bash
+       hdfs dfs -copyFromLocal RC_2014-01 hdfs:///projects/group5/
+       ```
 
 5. Filter
 
-   ```bash
-   spark-submit --master yarn --deploy-mode client filter_apple_spark.py hdfs:///projects/group5/RC_2014-01 hdfs:///projects/group5/2014-01
-   ```
+       ```bash
+       spark-submit --master yarn --deploy-mode client filter_apple_spark.py hdfs:///projects/group5/RC_2014-01 hdfs:///projects/group5/2014-01
+       ```
 
 **Improvement(auto bash script)**
 
