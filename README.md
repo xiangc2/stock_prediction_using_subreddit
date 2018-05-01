@@ -77,14 +77,12 @@ Course Cluster
        ```
 ### Machine Learning
         
-        ```bash
+       
         spark-submit --master yarn --deploy-mode client ml.py [subreddit_file] [stock_data_file]
-        ```
+        
     example
         
-        ```bash
-       
-        ```
+        
 
 **Improvement(auto bash script)**
 
