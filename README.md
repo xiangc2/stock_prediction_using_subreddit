@@ -34,6 +34,8 @@ Course Cluster
 
 5. ml.py
 
+    Core machine learning algorithm script.
+
 6. prepare
 
     Bash script for automatically uploading, filtering, and writing log.
@@ -73,15 +75,19 @@ Course Cluster
 5. Filter
 
        ```bash
+       # Filter by subreddit
        spark-submit --master yarn --deploy-mode client filter_apple_spark.py hdfs:///projects/group5/RC_2014-01 hdfs:///projects/group5/2014-01
+       
+       # Convert the time (The input depends on your own directory)
+       spark-submit --master yarn --deploy-mode client filter_time.py hdfs:///projects/group5/201*/part* hdfs:///projects/group5/time_filtered
        ```
        
 ### Machine Learning
         
-        
+        ```bash
         spark-submit --master yarn --deploy-mode client ml.py [subreddit_file] [stock_data_file]
         Example:spark-submit --master yarn --deploy-mode client ml.py hdfs:///projects/group5/filter_time/part-00043 hdfs:///projects/group5/stock
-        
+        ```
         
 
 **Improvement(auto bash script)**
