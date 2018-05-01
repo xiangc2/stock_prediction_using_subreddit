@@ -18,11 +18,11 @@ Course Cluster
 
 1. download.py
 
-   Collect and create download_links.
+    Collect and create download_links.
 
 2. download_links.txt
 
-   Links of needed data set.
+    Links of needed data set.
 
 3. filter_apple_spark.py
 
