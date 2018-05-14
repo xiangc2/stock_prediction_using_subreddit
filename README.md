@@ -55,47 +55,48 @@ pyspark
 1. Obtain download-links
 
    ```bash
-       # This will create a download_links.txt.
-       # The two parameters are time span, start month & end-month
-       python download.py 2014-01 2017-11
+   # This will create a download_links.txt.
+   # The two parameters are time span, start month & end-month
+   python download.py 2014-01 2017-11
    ```
 
 2. Download
 
-       ```bash
-       # On the cluster
-       wget -i -c download.txt
-       ```
+   ```bash
+   # On the cluster
+   wget -i -c download.txt
+   ```
 
 3. Extract
 
-       ```bash
-       # This will cost about 20 minutes for each file.
-       bzip2 -d RC_2014-01.bz2 # -d will delete the original archive
-       ```
+   ```bash
+   # This will cost about 20 minutes for each file.
+   bzip2 -d RC_2014-01.bz2 # -d will delete the original archive
+   ```
 
 4. Upload to hdfs
 
-       ```bash
-       hdfs dfs -copyFromLocal RC_2014-01 hdfs:///projects/group5/
-       ```
+   ```bash
+   hdfs dfs -copyFromLocal RC_2014-01 hdfs:///projects/group5/
+   ```
 
 5. Filter
 
-       ```bash
-       # Filter by subreddit
-       spark-submit --master yarn --deploy-mode client filter_apple_spark.py hdfs:///projects/group5/RC_2014-01 hdfs:///projects/group5/2014-01
+   ```bash
+   # Filter by subreddit
+   spark-submit --master yarn --deploy-mode client filter_apple_spark.py hdfs:///projects/group5/RC_2014-01 hdfs:///projects/group5/2014-01
        
-       # Convert the time (The input depends on your own directory)
-       spark-submit --master yarn --deploy-mode client filter_time.py hdfs:///projects/group5/201*/part* hdfs:///projects/group5/time_filtered
-       ```
+   # Convert the time (The input depends on your own directory)
+   spark-submit --master yarn --deploy-mode client filter_time.py hdfs:///projects/group5/201*/part* hdfs:///projects/group5/time_filtered
+   ```
        
 ### Machine Learning
         
-        ```bash
-        spark-submit --master yarn --deploy-mode client ml.py [subreddit_file] [stock_data_file]
-        Example:spark-submit --master yarn --deploy-mode client ml.py hdfs:///projects/group5/filter_time/part-00043 hdfs:///projects/group5/stock
-        ```
+```bash
+spark-submit --master yarn --deploy-mode client ml.py [subreddit_file] [stock_data_file]
+# Example:
+spark-submit --master yarn --deploy-mode client ml.py hdfs:///projects/group5/filter_time/part-00043 hdfs:///projects/group5/stock
+```
 
 **Improvement(auto bash script)**
 
