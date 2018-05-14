@@ -1,8 +1,8 @@
 # Stock Trend Prediction with Reddit Posts
 
-## Introduction:
+## Abstraction:
 
-Earlier studies on stock market prediction based on public voice use Twitter Data or New Articles as the source. News always reflect what have happened on the stock market, therefore,  not an ideal data source for predicting the future. In addition , because of the unpredictability in News and Twitter moments stock market prices follow a random walk pattern and cannot be predicted with more than 50% accuracy[1]. Unlike the previous study. we pick subreddit for apple and apple’s product as our source. They are more targeted community, and the comment are more sentimental rather than just stating the fact. So it serves well as the source to extract public opinion about the company. what’s more, most of the previous studies label each post as positive and negative by hand. This restrict the size of their source data, and its high cost of labor makes the prediction process not applicable to the industrial situation. In our research, we tried on merging all the post in one day,  and run an unsupervised model on the merged text to automatically extract the sentiment feature.  Though this may result in lower accuracy. **It is now possible to train model on a much larger dataset and  makes the prediction process more automatic.(make more sense in real situation in industry)** We also performed some original tricks on feature extraction, like set post from the previous day and label from the current day together as the learning data, and include the label from the previous day as the current day’s feature.
+Accurately predicting stock price is a hot research topic among trading companies. Being able to predict stock price accurately not only helps company make money, but also helps to supervise the market and avoid potential economic crisis. Most of the prediction today are based on professional data such as portfolios. Our research tried to do the prediction based on public voice instead of these financial indicators. We pick AAPL (stock of apple) as our prediction target, and subreddit post as the feature data we used to extract people’s opinion. different feature extraction methods like TF-IDF and Word2vec are performed on the feature data. The result feature vectors together with the stock status are feed into machine learning algorithm to train a logistic model . We tried out different tricks in feature extraction and gradually enhance our model. At the end, all improved model achieves an accuracy better than 50%, with highest accuracy 56.84%. The noise is very big, and is hard for us to say our model works well in predicting the stock price. However, the experiments did show some useful method that could be used to improve the accuracy of predicting stock price.
 
 ## Dataset:
 
@@ -10,9 +10,17 @@ Google Finance AAPL stock data from 1/1/2014 to 11/30/2017
 
 All subreddit post from 1/1/2014 to 11/30/2017
 
-## Environment:
+## Platform:
 
-Course Cluster
+AWS
+
+## Framework:
+
+Spark
+
+## package:
+
+pyspark
 
 ## Files:
 
