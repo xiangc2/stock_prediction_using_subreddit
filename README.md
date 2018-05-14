@@ -54,11 +54,11 @@ pyspark
 
 1. Obtain download-links
 
-       ```console
+   ```bash
        # This will create a download_links.txt.
        # The two parameters are time span, start month & end-month
        python download.py 2014-01 2017-11
-       ```
+   ```
 
 2. Download
 
